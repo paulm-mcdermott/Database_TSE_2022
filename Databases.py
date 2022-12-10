@@ -14,6 +14,10 @@ print(my_connection)
 
 # create cursor
 my_cursor = my_connection.cursor(buffered=True)
+my_cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
+
+# drop statement if needed
+my_cursor.execute("DROP table Nurse, Inhabitant, ContactPerson, Session, UserSN, Visit, Participation, Prescribing, Comments, Declaring, Recommending, Following, Liking")
 
 # create all the mysql tables
 my_cursor.execute(table_creation_strings.create_activity)
@@ -110,14 +114,91 @@ for i in range(15):
   # use the INSERT statement to add the activity data to the database
   my_cursor.execute("INSERT IGNORE INTO Nurse (Surname, Name, NurseAddress, PhoneNb) VALUES (%s, %s, %s, %s)", (last_name, first_name, prof_address, phone_number))
 
-    
 
-my_cursor.execute("SELECT * FROM SkillActivity")
+# fill the medication table
+# dictionary of common medications for the elderly, and their active ingredients
+medications = {
+    "Bayer Aspirin": "acetylsalicylic acid",
+    "Advil" : "ibuprofen",
+    "Zocor": "simvastatin",
+    "Prinivil": "lisinopril",
+    "Glucophage": "metformin",
+    "Amoxil": "amoxicillin",
+    "Lasix": "furosemide",
+    "Levoxyl": "levothyroxine",
+    "Lipitor": "atorvastatin",
+}
+
+for name, info in medications.items():
+    # use the INSERT statement to add the activity data to the database
+    my_cursor.execute("INSERT IGNORE INTO Medication (NameM, ActiveSubstance) VALUES (%s, %s)", (name, info))
+
+# filling inhabitant table
+# need existing random nurse id as foreign key
+def get_rand_nurse():
+  query = "SELECT NurseId FROM Nurse ORDER BY RAND() LIMIT 1"
+  # execute the SQL query
+  my_cursor.execute(query)
+  nurse_id_row = my_cursor.fetchone()
+  return nurse_id_row[0]
+
+# need existing random contact id as a foreign key
+def get_rand_contact():
+  query = "SELECT ContactId FROM ContactPerson ORDER BY RAND() LIMIT 1"
+  # execute the SQL query
+  my_cursor.execute(query)
+  contact_id_row = my_cursor.fetchone()
+  return contact_id_row[0]
+
+# since inhabibants live in the same community, they will have the same address, but with different apartment numbers
+address_number = range(1,201)
+address_numbers_f = random.sample(address_number,100)
+address_numbers_m = random.sample(address_number,100)
+community_address = '300 Rue des Fleurs'
+categories = ['Senior','Adult','Young']
+
+# make 100 female inhabitants
+for i in range(100):
+  # get necessary items for entry
+  first_name = random.choice(female_names)
+  last_name = random.choice(surnames)
+  category = random.choice(categories)
+  address = community_address + ' Appt. ' + str(address_numbers_f.pop())
+  phone_number = generate_phone_number()
+  gender = 'F'
+  NurseId = get_rand_nurse()
+  ContactId = get_rand_contact()
+  # use the INSERT statement to add the activity data to the database
+  my_cursor.execute("INSERT IGNORE INTO Inhabitant (LastName, FirstName, Category, Address, PhoneNumber, Gender, NurseId_Follows, ContactId) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
+  (last_name, first_name, category, address, phone_number, gender, NurseId, ContactId))
+
+# make 100 male inhabitants
+for i in range(100):
+  # get necessary items for entry
+  first_name = random.choice(male_names)
+  last_name = random.choice(surnames)
+  category = random.choice(categories)
+  address = community_address + ' Appt. ' + str(address_numbers_m.pop())
+  phone_number = generate_phone_number()
+  gender = 'M'
+  NurseId_Follows = get_rand_nurse()
+  ContactId = get_rand_contact()
+  # use the INSERT statement to add the activity data to the database
+  my_cursor.execute("INSERT IGNORE INTO Inhabitant (LastName, FirstName, Category, Address, PhoneNumber, Gender, NurseId_Follows, ContactId) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
+  (last_name, first_name, category, address, phone_number, gender, NurseId, ContactId))
+
+
+
+
+my_cursor.execute("SELECT * FROM Inhabitant")
+
+""" my_cursor.execute("SELECT * FROM SkillActivity")
 my_cursor.execute("SELECT * FROM ContactPerson")
 my_cursor.execute("SELECT * FROM Nurse")
-
+my_cursor.execute("SELECT * FROM Medication")
+"""
 myresult = my_cursor.fetchall()
 
 for x in myresult:
-  print(x)
+  print(x) 
 

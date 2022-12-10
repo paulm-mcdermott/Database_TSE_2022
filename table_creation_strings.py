@@ -43,7 +43,7 @@ create_inhabitant = """
       Category CHAR(50),
       Address VARCHAR(50),
       PhoneNumber VARCHAR(50),
-      Gender BINARY(50),
+      Gender VARCHAR(10),
       NurseId_Follows INT,
       ContactId INT,
       FOREIGN KEY(NurseId_Follows) REFERENCES Nurse(NurseId),
