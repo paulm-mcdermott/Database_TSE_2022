@@ -1,6 +1,7 @@
 import mysql.connector
 import random
 import table_creation_strings
+from datetime import datetime, timedelta
 
 # make mysql connection
 my_connection = mysql.connector.connect(
@@ -150,7 +151,24 @@ def get_rand_contact():
   contact_id_row = my_cursor.fetchone()
   return contact_id_row[0]
 
+# need existing inhabitant id as foreign key
+def get_rand_inhabitant():
+  query = "SELECT InHabitantId FROM Inhabitant ORDER BY RAND() LIMIT 1"
+  # execute the SQL query
+  my_cursor.execute(query)
+  inhabitant_id_row = my_cursor.fetchone()
+  return inhabitant_id_row[0]
+
+# need existing activity as foreign key
+def get_rand_activity():
+  query = "SELECT Activity FROM SkillActivity ORDER BY RAND() LIMIT 1"
+  # execute the SQL query
+  my_cursor.execute(query)
+  activity_name_row = my_cursor.fetchone()
+  return activity_name_row[0]
+
 # since inhabibants live in the same community, they will have the same address, but with different apartment numbers
+# each inhabitant falls into a category
 address_number = range(1,201)
 address_numbers_f = random.sample(address_number,100)
 address_numbers_m = random.sample(address_number,100)
@@ -168,6 +186,7 @@ for i in range(100):
   gender = 'F'
   NurseId = get_rand_nurse()
   ContactId = get_rand_contact()
+  
   # use the INSERT statement to add the activity data to the database
   my_cursor.execute("INSERT IGNORE INTO Inhabitant (LastName, FirstName, Category, Address, PhoneNumber, Gender, NurseId_Follows, ContactId) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
   (last_name, first_name, category, address, phone_number, gender, NurseId, ContactId))
@@ -183,10 +202,43 @@ for i in range(100):
   gender = 'M'
   NurseId_Follows = get_rand_nurse()
   ContactId = get_rand_contact()
+
   # use the INSERT statement to add the activity data to the database
   my_cursor.execute("INSERT IGNORE INTO Inhabitant (LastName, FirstName, Category, Address, PhoneNumber, Gender, NurseId_Follows, ContactId) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", 
   (last_name, first_name, category, address, phone_number, gender, NurseId, ContactId))
 
+# filling the Sessions tables
+# first challenge is dates, the following code generates a random date from Jan 1 2017 to Jan 1 2021
+def generate_random_date():
+  # Set the start and end dates for the date range
+  start_date = datetime(2017, 1, 1)
+  end_date = datetime(2022, 1, 1)
+
+  # Calculate the number of days in the date range
+  num_days = (end_date - start_date).days
+
+  # Pick a random day within the date range
+  random_day = random.randint(0, num_days)
+
+  # Calculate the random date by adding the random number of days to the start date
+  random_date = start_date + timedelta(days=random_day)
+
+  # Format the random date as a string in the desired format
+  random_date_str = random_date.strftime("%Y-%m-%d")
+  return random_date_str
+
+# now we will make sessions can start on the hour for 8 hours, and duration can either be 30 minutes or an hour
+session_times = ['09:00:00','10:00:00','11:00:00','12:00:00','13:00:00','14:00:00','15:00:00','16:00:00','17:00:00']
+session_duration = [timedelta(minutes=30),timedelta(minutes=60)]
+
+for i in range(15):
+  # get necessary items for entry
+  first_name = random.choice(first_names)
+  last_name = random.choice(surnames)
+  phone_number = generate_phone_number()
+  prof_address = random.choice(nurse_addresses)
+  # use the INSERT statement to add the activity data to the database
+  my_cursor.execute("INSERT IGNORE INTO Nurse (Surname, Name, NurseAddress, PhoneNb) VALUES (%s, %s, %s, %s)", (last_name, first_name, prof_address, phone_number))
 
 
 
