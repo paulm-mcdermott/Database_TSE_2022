@@ -21,6 +21,7 @@ print(my_connection)
 my_cursor = my_connection.cursor(buffered=True)
 my_cursor.execute("SET FOREIGN_KEY_CHECKS = 0") # in order to drop tables, foreign key checks must be 0
 
+
 # drop statement if needed
 my_cursor.execute("DROP table Nurse, Inhabitant, ContactPerson, Session, UserSN, Visit, Participation, Prescribing, Comments, Declaring, Recommending, Following, Liking")
 
@@ -50,12 +51,9 @@ fill_inhabitants_table(my_cursor, constants.female_names, constants.male_names, 
 fill_session_table(my_cursor, constants.sessions_start_date, constants.sessions_end_date, constants.session_times, 40, constants.session_durations)
 fill_user_sn_table(my_connection, my_cursor, 0.6)
 
-# fill comments table, must be filled in two parts. this part is just the initial comments
-# TODO there is comment on comment functionality that needs to be built in, for now i'm setting is commented by to 1
-# stages should be: set original comments, iterate through looking for followers, make a follower comment at a prob
+# note: this only fills the initial comment; those that are not responses. we can only fill responses once we have followers
 fill_comments_table(my_cursor,constants.sn_start_date, constants.sn_end_date, 120)
 
-# fill visit table
 fill_visit_table(my_cursor,constants.first_visit_date, constants.last_visit_date, constants.reasons, constants.textual_remarks, 50)
 fill_declaring_list(my_connection,my_cursor, constants.all_activities, 5)
 fill_participation_table(my_connection, my_cursor, constants.num_sessions, 15)
@@ -64,7 +62,11 @@ fill_following_table(my_connection, my_cursor, 0.03)
 fill_liking_table(my_connection, my_cursor, 11)
 fill_prescribing_table(my_connection, my_cursor, constants.first_visit_date, constants.last_visit_date, constants.medications, 3)
 
-my_cursor.execute("SELECT * FROM Prescribing")
+# this fill more entries into comments tables, all responses to existing comments, and with the restriction that a user
+# can only respond to a post of a user which they follow
+fill_responses_comments_table(my_connection,my_cursor,0.2)
+
+my_cursor.execute("SELECT * FROM Visit")
 
 """ my_cursor.execute("SELECT * FROM SkillActivity")
 my_cursor.execute("SELECT * FROM ContactPerson")

@@ -69,8 +69,12 @@ sn_start_date = datetime(2019, 1, 1)
 sn_end_date = datetime(2022, 1, 1)
 
 # For Visits table
-reasons = ['felt sick'] #TODO: expand
-textual_remarks = ['all better','may prescribe medicine'] #TODO: expand
+reasons = ['felt sick', 'annual check up', 'pregnancy health-check', 'post-natal check-up', 'sports injury', 
+'surgery follow up', 'medication renewal', 'blood tests', 'skin issues', 'chronic illness check up', 'other',
+'they are a virgo']
+textual_remarks = ['all better','may prescribe medicine', '3 days to live', 'hypochondria',
+'booked off work for a week', 'no exercise for two months', 'should begin to attend a physiotherapist',  'died during appointment',
+'follow up appointment next week', 'blood tests completed, awaiting results']
 
 # For visits table
 # years for which the visits have occured

@@ -174,6 +174,25 @@ def fill_comments_table(cursor, start_date : datetime, end_date : datetime, num_
 		cursor.execute("INSERT IGNORE INTO Comments (DateComment, Content, CommentID_isCommentedBy, LogIn) VALUES (%s, %s, %s, %s)", 
 		(date_time, content, 0, user_login)) # reminder, implement responses
 
+# this needs to be a separate function, because we need to check followers before a response is posted
+def fill_responses_comments_table(connection, cursor, prob_respond_to_follower : float):
+	comment_info = get_all_comment_info(connection)
+	for comment in comment_info:
+		followers = get_followers(connection, comment[2])
+		for items in followers:
+			response_prob_draw = random.uniform(0,1)
+			if response_prob_draw < prob_respond_to_follower:
+				time_after = timedelta(minutes=random.randint(1,525600)) # responses within a year
+				date_response = comment[1] + time_after
+				content = generate_comment_content()
+				commented_on = comment[0]
+				login = items
+				# use the INSERT statement to add the activity data to the database
+				cursor.execute("INSERT IGNORE INTO Comments (DateComment, Content, CommentID_isCommentedBy, LogIn) VALUES (%s, %s, %s, %s)", 
+				(date_response, content, commented_on, login)) # reminder, implement responses
+
+
+
 ########################################
 # fill Visit table
 ########################################

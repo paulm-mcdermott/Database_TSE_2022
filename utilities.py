@@ -1,5 +1,6 @@
 import random
 from datetime import datetime, timedelta
+import mysql.connector
 
 # several functions to help build out the necessary elements
 
@@ -121,6 +122,23 @@ def get_all_comment_ids(connection):
   # return list with comment ids
   return comment_list
 
+# get comment id, datecomment, and login of who posted the comment, didn't want to modify the get comment id function
+def get_all_comment_info(connection):
+  # create a unique cursor for this function
+  comment_info_cursor = connection.cursor(buffered=True)
+  # define select statement to get id from comments table
+  select_st = "SELECT CommentId, DateComment, LogIn FROM Comments"
+  comment_info_cursor.execute(select_st)
+  comment_info_list =[]
+  # iterate over the result set
+  for comment in comment_info_cursor:
+    # print the values of the CommentId columns
+    comment_info_list.append(list(comment))
+  # close comment cursor  
+  comment_info_cursor.close()
+  # return list with comment ids
+  return comment_info_list
+
 # content for comments
 def generate_comment_content():
   positive_words = ["amazing","beautiful","great","exciting","fantastic"]
@@ -147,6 +165,28 @@ def bind_lists(left_list,right_list,num_right):
   # return the repeat list
   return binded_list
 
+def get_followers(connection, login_id : str):
+  # create a unique cursor for this function
+  id_is_followed = login_id
+  query = f"SELECT LogIn_Follows FROM Following WHERE LogIn_Is_Followed_by_ = '{id_is_followed}'"
+  followers_cursor = connection.cursor(buffered=True)
+
+  # we need a try except statement to handle if the login is not in the table
+  try:
+    # define select statement to get id from comments table
+    followers_cursor.execute(query)
+  except mysql.connector.Error as error:
+    return f'Error: {error}'
+  else:
+    follower_list =[]
+    # iterate over the result set
+    for follower in followers_cursor:
+      # add all followers to a list
+      follower_list.append(follower[0])
+    # close follower cursor  
+    followers_cursor.close()
+    # return list with followers
+    return follower_list
 
 
 
