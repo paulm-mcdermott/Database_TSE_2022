@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-# years for which the community h
+# years for which the community has existed
 sessions_start_date = datetime(2019, 1, 1)
 sessions_end_date = datetime(2022, 1, 1)
 

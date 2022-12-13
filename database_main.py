@@ -6,6 +6,14 @@ from fill_tables import *
 import constants
 import os
 
+# NOTE: The current file is set up to connect to our local mysql servers, and is currently written assuming that the database already exists (note the 'database =' parameter
+# in the connector). To be run on a new mysql server, you will need to fill in the host and user parameters in the connector, and add a password field if your mysql user has
+# a password. Once the database exists, you can use the database parameter in the connector as well. To create the database, you can either create it directly in mysql (this is what
+# we did), or execute the CREATE DATABASE line. Note that if you try to execute CREATE DATABASE line when the database already exists, it will prevent the script from running. Also,
+# if you have already created the tables, then you will need to activate the DROP tables command (currently commented out) to get the file to run. This is because the script will
+# halt at table creation due to the fact that tables already exist. Last note, in order to execute the commands to mysql server, you need to run the command my_cursor.commit() (currently
+# commented out at the end of the file). If you do not run this command, the mysql server will not reflect the commands in this script.
+
 
 # make mysql connection
 my_connection = mysql.connector.connect(
@@ -19,11 +27,13 @@ print(my_connection)
 
 # create cursor
 my_cursor = my_connection.cursor(buffered=True)
-my_cursor.execute("SET FOREIGN_KEY_CHECKS = 0") # in order to drop tables, foreign key checks must be 0
 
+# current file assumes that database is already made. If you are running from a fresh file, you need to run this line to create the database.
+# my_cursor.execute("CREATE DATABASE DatabaseTSE2022")
 
-# drop statement if needed
-my_cursor.execute("DROP table Nurse, Inhabitant, ContactPerson, Session, UserSN, Visit, Participation, Prescribing, Comments, Declaring, Recommending, Following, Liking")
+# drop statement is needed if the tables already exist, and you want to reset them. Need to set foreign key checks to zero to successfully drop table.
+# my_cursor.execute("SET FOREIGN_KEY_CHECKS = 0") # in order to drop tables, foreign key checks must be 0
+# my_cursor.execute("DROP table Nurse, Inhabitant, ContactPerson, Session, UserSN, Visit, Participation, Prescribing, Comments, Declaring, Recommending, Following, Liking")
 
 # create all the mysql tables
 my_cursor.execute(table_creation_strings.create_activity)
@@ -54,6 +64,7 @@ fill_user_sn_table(my_connection, my_cursor, 0.6)
 # note: this only fills the initial comment; those that are not responses. we can only fill responses once we have followers
 fill_comments_table(my_cursor,constants.sn_start_date, constants.sn_end_date, 120)
 
+# fill more tables
 fill_visit_table(my_cursor,constants.first_visit_date, constants.last_visit_date, constants.reasons, constants.textual_remarks, 50)
 fill_declaring_list(my_connection,my_cursor, constants.all_activities, 5)
 fill_participation_table(my_connection, my_cursor, constants.num_sessions, 15)
@@ -62,19 +73,15 @@ fill_following_table(my_connection, my_cursor, 0.03)
 fill_liking_table(my_connection, my_cursor, 11)
 fill_prescribing_table(my_connection, my_cursor, constants.first_visit_date, constants.last_visit_date, constants.medications, 3)
 
-# this fill more entries into comments tables, all responses to existing comments, and with the restriction that a user
+# this fills more entries into comments tables. they are responses to existing comments, and with the restriction that a user
 # can only respond to a post of a user which they follow
 fill_responses_comments_table(my_connection,my_cursor,0.2)
 
-my_cursor.execute("SELECT * FROM Visit")
-
-""" my_cursor.execute("SELECT * FROM SkillActivity")
-my_cursor.execute("SELECT * FROM ContactPerson")
-my_cursor.execute("SELECT * FROM Nurse")
-my_cursor.execute("SELECT * FROM Medication")
-"""
 myresult = my_cursor.fetchall()
 
 for x in myresult:
   print(x) 
 
+# in order to actually update the database on the mysql server, you must commit the commands
+# commented out because we don't want to recommit
+# my_connection.commit()

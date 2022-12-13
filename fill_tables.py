@@ -235,7 +235,7 @@ def fill_participation_table(connection, cursor, num_sessions : int, max_attenda
 	for item in get_inhabitant_info(connection):
 		inhabitant_id_list.append(item[0])
 
-	# reusing bind list, up to 15 inhabitants per session
+	# reusing bind list, up to 'max_attendance' inhabitants per session
 	session_inhabitants = bind_lists(list(range(1,num_sessions+1)), inhabitant_id_list, max_attendance)
 
 	for item in session_inhabitants:
